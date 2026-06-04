@@ -1,0 +1,51 @@
+[build-system]
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
+
+[project]
+name = "graphed-core"
+version = "0.0.1"
+description = "Rust+PyO3 thread-safe interned graph IR for graphed (MUST NOT import awkward)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "graphed-org" }]
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Rust",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff"]
+docs = ["sphinx", "furo"]
+
+[project.urls]
+Homepage = "https://github.com/graphed-org/graphed-core"
+
+[tool.maturin]
+# Mixed layout: compiled module at graphed_core.graphed_core, re-exported by the Python package
+# (which also ships type stubs + py.typed).
+module-name = "graphed_core.graphed_core"
+python-source = "python"
+features = ["pyo3/extension-module"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+src = ["python", "tests"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["python"]
