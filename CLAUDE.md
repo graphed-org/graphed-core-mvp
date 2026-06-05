@@ -6,12 +6,12 @@ relevant guardrails.
 
 ## What this repo is
 
-`graphed-core`: the **Rust+PyO3 thread-safe interned graph IR** — the spine every other package
-builds on. The graph lives in **Rust**, not Python. Later milestones add the optimizer (M4), the
-execution protocol (M7 contract), and plan serialization (M8) here; **M1 is the IR only**.
+`graphed-core`: the **Rust+PyO3 thread-safe interned graph IR + optimizer** — the spine every other
+package builds on. The graph lives in **Rust**, not Python. **M1** is the IR; **M4** is the optimizer.
+Later milestones add the execution protocol (M7 contract) and plan serialization (M8) here.
 
-> Hard guardrails (A.4 / M1): **MUST NOT import awkward** · **no optimization** (that is M4) ·
-> graph lives in Rust · any `unsafe` needs a line-by-line `// SAFETY:` justification (none at M1).
+> Hard guardrails (A.4): **MUST NOT import awkward** · graph + optimization live in Rust · any
+> `unsafe` needs a line-by-line `// SAFETY:` justification (there is none).
 
 ## M1 — what is implemented
 
@@ -29,15 +29,35 @@ execution protocol (M7 contract), and plan serialization (M8) here; **M1 is the 
   `add_source/add_op/add_reduction/add_external/mark_output/node_count/to_dot`, `PayloadDescriptor`,
   `version()`. `to_dot()` is byte-stable.
 
+## M4 — the optimizer (DCE/CSE + equality-saturation stage fusion)
+
+- **`RewriteEngine` trait** (`optimizer/engine.rs`) is the engine boundary — egg-free types in/out,
+  so **no `egg` types leak past it** (Phase-2 egglog swap is one trait impl). `EggEngine` is the MVP.
+- **Genuine equality saturation**: the IR is loaded into an egg e-graph; **SOUND rules only**
+  (commutativity of `+`/`*`, additive/multiplicative identities — mask-fusion/field-collapse are
+  excluded as domain-dependent/unsound). Extraction is an **O(N) cost-quotient** (keep the earliest/
+  simplest node per eclass), because egg's recursive `Extractor` is O(depth·N) and blows up to O(N²)
+  on the deep chains a systematics graph produces — exactly what the benchmark guards against.
+- **DCE** (reachability from outputs) and **CSE** (hash-consing) are plain passes **outside** the
+  engine. **Stage fusion** groups maximal op-runs between boundaries into `Stage` nodes (a fan-out op
+  or a boundary ends a stage; fusion never crosses a boundary).
+- `reduce` / `reduce_incremental` / `reduction_report` exposed via PyO3. Reduction is **byte-stable**.
+- A **10,000-node systematics graph reduces to O(stage) nodes in < 1 s**; a **CI benchmark FAILS if
+  reduction time grows super-linearly across {1k,2k,4k,8k}** (`tests/frozen/m4/test_benchmark.py`).
+- Semantic equivalence (reduced vs un-reduced) is proven by a toy integer interpreter in the Rust
+  suite; the full numpy/awkward-backend executor equivalence is M7.
+
 ## Layout
 
 ```
-src/param.rs   ParamValue + ParamMap (total-order float hashing)
-src/node.rs    NodeKey (structural identity) + PayloadDescriptor
-src/store.rs   GraphStore (Mutex-guarded intern table) + Rust tests + loom model
-src/lib.rs     PyO3 bindings
+src/param.rs        ParamValue + ParamMap (total-order float hashing + optimizer tokens)
+src/node.rs         NodeKey (structural identity) + PayloadDescriptor + Stage (fused op-DAG)
+src/store.rs        GraphStore (Mutex-guarded intern table) + reduce() + Rust tests + loom model
+src/optimizer/      RewriteEngine + EggEngine (engine.rs), DCE/CSE/stage-fusion pipeline (mod.rs)
+src/lib.rs          PyO3 bindings (incl. reduce / reduction_report)
 python/graphed_core/  __init__.py re-export + __init__.pyi stubs + py.typed
-tests/frozen/m1/      the frozen acceptance suite (Python)
+tests/frozen/m1/    the M1 IR acceptance suite (Python)
+tests/frozen/m4/    the M4 optimizer suite: reduce, systematics, super-linear benchmark
 ```
 
 ## Gates (run before pushing)

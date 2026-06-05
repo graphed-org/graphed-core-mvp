@@ -37,8 +37,8 @@ jobs:
           ruff format --check .
       - name: Mypy (strict, on the type stubs)
         run: mypy
-      - name: Pytest (frozen M1 suite)
-        run: pytest tests/frozen/m1 -p no:cacheprovider
+      - name: Pytest (frozen M1 + M4 suite, incl. the super-linear reduction benchmark)
+        run: pytest tests/frozen -p no:cacheprovider
 
   # Pure-Rust IR: formatting, clippy (deny warnings), unit tests, and the loom model.
   rust:
@@ -78,7 +78,7 @@ jobs:
       - run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
-          pytest tests/frozen/m1 -p no:cacheprovider
+          pytest tests/frozen -p no:cacheprovider
 
   build-wheel:
     name: build wheel (abi3 + 3.14t)
