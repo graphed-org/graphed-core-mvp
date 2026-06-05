@@ -75,7 +75,7 @@ def main() -> None:
 
     root = Path(__file__).resolve().parent.parent
     records = []
-    for milestone in ("M0", "M1", "M4", "M7"):
+    for milestone in ("M0", "M1", "M4", "M7", "M8"):
         o = _drive(milestone, total=args.total, cov=args.cov, ci_confirmed=args.ci_confirmed)
         append_attempt(
             root / ".graphed" / milestone / "attempts.md",

@@ -47,17 +47,35 @@ Later milestones add the execution protocol (M7 contract) and plan serialization
 - Semantic equivalence (reduced vs un-reduced) is proven by a toy integer interpreter in the Rust
   suite; the full numpy/awkward-backend executor equivalence is M7.
 
+## M8 — plan serialization (the durable, canonical IR form)
+
+- **`GraphStore.serialize()` / `GraphStore.deserialize()`** (Rust, `src/serialize.rs`): a compact
+  length-prefixed binary encoding with a version magic (`GIR1`). Nodes are written in interned-id
+  order and `ParamMap` is key-sorted, so **identical graphs serialize byte-identically** (the M8
+  determinism gate) and a round trip rebuilds a structurally identical store. This is the
+  **canonical durable representation** (A.3.1) — never cloudpickle.
+- **`DurablePlan`** (pure Python, `python/graphed_core/plan.py`): the glossary "Plan" — wraps the
+  serialized IR with executor metadata (partitions, read columns, reduction/stopping/locality/
+  resource specs). Versioned, byte-identical `to_bytes`/`from_bytes`; content-addressed `task_id`
+  (SHA-256 over IR identity + process spec + partition → cache-poisoning-safe). `OpSpec` resolves
+  callables by **import ref** (no source files) or, only for genuinely opaque callables, embeds them
+  **by value** (cloudpickle) flagged `opaque=True` (a preservation risk M9 surfaces).
+- The content-addressed **Store / checkpoint / resume / error-harvesting** layer is **M8's other
+  half in `graphed-checkpoint`** (it consumes `DurablePlan` + `task_id`).
+
 ## Layout
 
 ```
 src/param.rs        ParamValue + ParamMap (total-order float hashing + optimizer tokens)
 src/node.rs         NodeKey (structural identity) + PayloadDescriptor + Stage (fused op-DAG)
+src/serialize.rs    M8 canonical IR codec (GIR1: versioned, deterministic, byte-identical)
 src/store.rs        GraphStore (Mutex-guarded intern table) + reduce() + Rust tests + loom model
 src/optimizer/      RewriteEngine + EggEngine (engine.rs), DCE/CSE/stage-fusion pipeline (mod.rs)
-src/lib.rs          PyO3 bindings (incl. reduce / reduction_report)
-python/graphed_core/  __init__.py re-export + __init__.pyi stubs + py.typed
+src/lib.rs          PyO3 bindings (incl. reduce / reduction_report / serialize / deserialize)
+python/graphed_core/  __init__.py re-export + stubs (__init__.pyi + graphed_core.pyi) + plan.py
 tests/frozen/m1/    the M1 IR acceptance suite (Python)
 tests/frozen/m4/    the M4 optimizer suite: reduce, systematics, super-linear benchmark
+tests/frozen/m8/    the M8 suite: IR codec round trip + DurablePlan determinism/task_id/no-source
 ```
 
 ## Gates (run before pushing)

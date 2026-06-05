@@ -19,7 +19,8 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff"]
+# cloudpickle: M8 embeds genuinely-opaque user callables by value in a DurablePlan (flagged opaque).
+dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff", "cloudpickle"]
 docs = ["sphinx", "furo"]
 
 [project.urls]
@@ -49,3 +50,7 @@ ignore = ["E501"]
 python_version = "3.11"
 strict = true
 files = ["python"]
+
+[[tool.mypy.overrides]]
+module = ["cloudpickle.*"]
+ignore_missing_imports = true
