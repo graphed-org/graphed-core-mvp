@@ -32,7 +32,7 @@
           "wall_clock_s": 0.0
         }
       ],
-      "phase": "REVIEW",
+      "phase": "DONE",
       "reject_count": 0
     },
     "M1": {
@@ -67,7 +67,7 @@
           "wall_clock_s": 0.0
         }
       ],
-      "phase": "REVIEW",
+      "phase": "DONE",
       "reject_count": 0
     },
     "M4": {
@@ -102,7 +102,7 @@
           "wall_clock_s": 0.0
         }
       ],
-      "phase": "REVIEW",
+      "phase": "DONE",
       "reject_count": 0
     },
     "M7": {
@@ -137,11 +137,11 @@
           "wall_clock_s": 0.0
         }
       ],
-      "phase": "REVIEW",
+      "phase": "DONE",
       "reject_count": 0
     }
   },
   "repo": "graphed-core",
   "schema_version": 1,
-  "updated_at": "2026-06-05T19:28:48Z"
+  "updated_at": "2026-06-05T19:32:54Z"
 }
