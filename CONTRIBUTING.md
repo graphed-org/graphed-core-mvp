@@ -37,5 +37,5 @@ sphinx-build -W -b html docs docs/_build/html
 If both `VIRTUAL_ENV` and `CONDA_PREFIX` are set, run maturin with `env -u CONDA_PREFIX`.
 
 CI runs the Python frozen suite on the full A.5 matrix (building the extension on each OS), a
-dedicated Rust job (fmt + clippy + cargo test + loom), free-threaded 3.13t/3.14/3.14t, a wheel
+dedicated Rust job (fmt + clippy + cargo test + loom), free-threaded 3.14/3.14t, a wheel
 build, and `sphinx -W`. The matrix is the gate of record.
