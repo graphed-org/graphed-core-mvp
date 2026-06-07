@@ -1,7 +1,7 @@
 # Contributing to graphed-core
 
 Part of the `graphed` project, governed by the gated three-role pipeline. The root
-[`graphed-project/CLAUDE.md`](https://github.com/graphed-org/graphed-project) and the project plan
+[`graphed-project/CLAUDE.md`](https://github.com/graphed-org/graphed-project-mvp) and the project plan
 (`graphed-project-plan-gated.md`) are authoritative; the plan always wins.
 
 ## Guardrails (M1)

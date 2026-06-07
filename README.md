@@ -2,7 +2,7 @@
 
 Rust+PyO3 **thread-safe interned graph IR** for `graphed` (milestone M1). The graph lives in Rust;
 this package **MUST NOT import awkward**. Part of the [`graphed-org`](https://github.com/graphed-org)
-project; see [`graphed-project`](https://github.com/graphed-org/graphed-project) for the root
+project; see [`graphed-project`](https://github.com/graphed-org/graphed-project-mvp) for the root
 guidance and the authoritative plan.
 
 ## What it does (M1)

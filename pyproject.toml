@@ -24,7 +24,7 @@ dev = ["pytest", "pytest-cov", "hypothesis", "mypy", "ruff", "cloudpickle"]
 docs = ["sphinx", "furo"]
 
 [project.urls]
-Homepage = "https://github.com/graphed-org/graphed-core"
+Homepage = "https://github.com/graphed-org/graphed-core-mvp"
 
 [tool.maturin]
 # Mixed layout: compiled module at graphed_core.graphed_core, re-exported by the Python package
