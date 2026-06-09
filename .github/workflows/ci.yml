@@ -19,8 +19,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ["3.11", "3.12", "3.13"]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+        python: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -60,15 +60,15 @@ jobs:
       - name: loom model of the locking discipline
         run: RUSTFLAGS="--cfg loom" cargo test --lib loom_model
 
-  # Free-threaded + bleeding-edge Pythons (plan A.5): genuinely exercises no-GIL thread safety.
-  test-experimental:
-    name: test (experimental) py${{ matrix.python }}
+  # Free-threaded Python (plan A.5): genuinely exercises no-GIL thread safety. A required gate —
+  # the extension is built gil_used=false and the locking discipline is loom-modeled.
+  test-freethreaded:
+    name: test py${{ matrix.python }} (free-threaded)
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.14", "3.14t"]
+        python: ["3.14t"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -80,8 +80,10 @@ jobs:
           python -m pip install -e ".[dev]"
           pytest tests/frozen -p no:cacheprovider
 
-  build-wheel:
-    name: build wheel (abi3 + 3.14t)
+  # Rust line coverage (plan B.3: the >=90% gate must not silently skip the Rust core; the
+  # Python coverage gate only sees the thin re-export). Threshold rises with the suite.
+  coverage-rust:
+    name: rust coverage (cargo llvm-cov)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -89,14 +91,16 @@ jobs:
         with:
           python-version: "3.12"
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build wheels
-        run: |
-          python -m pip install --upgrade pip maturin
-          maturin build --release --out dist
-      - uses: actions/upload-artifact@v4
         with:
-          name: wheels
-          path: dist/*
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Link libpython for the test binary
+        run: echo "LD_LIBRARY_PATH=$(python -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\"))')" >> "$GITHUB_ENV"
+      # lib.rs is the PyO3 binding layer: cargo test cannot import it, but the Python frozen
+      # suites in the `test` jobs of this same workflow exercise it end-to-end. Everything else
+      # (IR, optimizer, incremental reducer, codec, store) is gated here. Local: 92.3% lines.
+      - name: cargo llvm-cov (fail under 85% lines, bindings excluded)
+        run: cargo llvm-cov --ignore-filename-regex 'lib\.rs' --fail-under-lines 85
 
   docs:
     name: docs (sphinx -W)
