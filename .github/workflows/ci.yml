@@ -98,9 +98,9 @@ jobs:
         run: echo "LD_LIBRARY_PATH=$(python -c 'import sysconfig; print(sysconfig.get_config_var(\"LIBDIR\"))')" >> "$GITHUB_ENV"
       # lib.rs is the PyO3 binding layer: cargo test cannot import it, but the Python frozen
       # suites in the `test` jobs of this same workflow exercise it end-to-end. Everything else
-      # (IR, optimizer, incremental reducer, codec, store) is gated here. Local: 92.3% lines.
-      - name: cargo llvm-cov (fail under 85% lines, bindings excluded)
-        run: cargo llvm-cov --ignore-filename-regex 'lib\.rs' --fail-under-lines 85
+      # (IR, optimizer, incremental reducer, codec, store) is gated here. Local: 92.7% lines.
+      - name: cargo llvm-cov (fail under 90% lines, bindings excluded)
+        run: cargo llvm-cov --ignore-filename-regex 'lib\.rs' --fail-under-lines 90
 
   docs:
     name: docs (sphinx -W)

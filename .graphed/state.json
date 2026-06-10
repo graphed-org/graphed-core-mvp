@@ -73,7 +73,7 @@
     "M22": {
       "dispute_count": 0,
       "escalated": false,
-      "freeze_tag": "freeze-M22-0",
+      "freeze_tag": "freeze-M22-1",
       "gates": {
         "benchmark": null,
         "coverage": true,
@@ -213,5 +213,5 @@
   },
   "repo": "graphed-core",
   "schema_version": 1,
-  "updated_at": "2026-06-10T20:47:12Z"
+  "updated_at": "2026-06-10T22:19:35Z"
 }
