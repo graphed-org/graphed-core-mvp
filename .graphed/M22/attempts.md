@@ -33,3 +33,17 @@
   re-pinned as fresh-request equality + no-mutator).
 - gates: cargo test 26/26 · clippy -D warnings clean · fmt clean · llvm-cov 92.72% (>=90) ·
   pytest 118/118 · mypy clean · ruff clean · sphinx -W clean.
+
+## 2026-06-11 — engineering documentation pass (user request)
+
+- docs/design.rst rewritten from a 33-line sketch into the full "How graphed-core works"
+  walkthrough: the IR (interning, structural identity, token encoding incl. float bit patterns,
+  the Mutex discipline, compile-request-scoped outputs); the OPTIMIZER as the pedagogical
+  centerpiece (the four-pass pipeline; an e-graph/equality-saturation primer; the sound rule
+  set and why domain rules are excluded; determinism-over-wall-clock budgets; the O(N^2)
+  extraction trap and the O(N) earliest-representative quotient escape with the CI benchmark
+  tie-in; CSE-after-canonicalization and why; both fusion modes with their determinism
+  arguments; a worked example traced through every pass; the incremental reducer with the
+  constructor-local one-pass argument and its tripwire); the GIR1 codec; the plan layer; a
+  file-by-file reading map. docs/index.rst rewritten to match (the old text still claimed
+  "no optimization here"). sphinx -W clean.
