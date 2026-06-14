@@ -24,6 +24,20 @@ assert s.add_op("pt", [src]) == pt        # interned
 s.mark_output(s.add_reduction("sum", [pt]))
 ```
 
+## The execution contract + monitor seam (`graphed_core.execution`)
+
+Beyond the IR, this package owns the *pure-Python, data-only* execution contract every executor
+implements: `Plan`, `Task`, `Partition`, `StopCondition`, `Executor`, plus the dependency-free
+`SequentialRunner` baseline. It imports no awkward/numpy/web — it is a stable, minimal seam.
+
+Part of that contract is the **live-observability seam (M37)**: `TaskEvent` / `TaskPhase` and the
+`Monitor` / `WorkerProfiler` protocols. An executor *emits* `TaskEvent`s through a `Monitor` so a
+dashboard can watch a run — but the seam is deliberately **render- and transport-agnostic** (it knows
+nothing of websockets or Perspective; `graphed-debug` supplies those). It is also **passive**:
+emission is best-effort and a `Monitor` that raises is swallowed, so attaching one never changes a
+result. The vocabulary lives here, in `graphed-core`, because it is shared by *every* executor —
+the principle that a shared primitive belongs at the layer it serves.
+
 ## Develop
 
 ```bash
